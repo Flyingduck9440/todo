@@ -8,6 +8,10 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <color name="bg">#fafafa</color>
+    <color name="bg">#fbfbfb</color>
     <color name="floating_button">#0d9cde</color>
+
+    <color name="input_body">#FDF6EC</color>
+    <color name="input_header">#DAB88B</color>
+    <color name="search">#F2F2F4</color>
 </resources>

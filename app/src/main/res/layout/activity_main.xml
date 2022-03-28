@@ -35,19 +35,17 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_end="16dp" />
 
-    <EditText
-        android:id="@+id/edt_search"
+    <androidx.appcompat.widget.SearchView
+        android:id="@+id/search_note"
         android:layout_width="0dp"
-        android:layout_height="50dp"
-        android:background="@drawable/bg_search"
-        android:drawableEnd="@drawable/ic_search"
-        android:hint="Search"
-        android:inputType="textNoSuggestions"
-        android:paddingStart="20dp"
-        android:paddingEnd="20dp"
+        android:layout_height="wrap_content"
+        app:iconifiedByDefault="false"
+        android:background="@drawable/search_bg"
+        app:queryBackground="@android:color/transparent"
+        android:imeOptions="actionDone"
         app:layout_constraintStart_toStartOf="@id/guide_left"
         app:layout_constraintEnd_toEndOf="@id/guide_right"
-        app:layout_constraintTop_toTopOf="@id/guide_top" />
+        app:layout_constraintTop_toBottomOf="@id/guide_top"/>
 
     <HorizontalScrollView
         android:id="@+id/horizontalScrollView"
@@ -59,14 +57,15 @@
         android:scrollbars="none"
         app:layout_constraintEnd_toStartOf="@id/chip_add"
         app:layout_constraintStart_toStartOf="@id/guide_left"
-        app:layout_constraintTop_toBottomOf="@id/edt_search">
+        app:layout_constraintTop_toBottomOf="@id/search_note">
 
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/chip_group"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:singleLine="true"
-            app:singleSelection="true">
+            app:singleSelection="true"
+            app:selectionRequired="true">
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_item_all"
@@ -75,36 +74,6 @@
                 android:layout_height="wrap_content"
                 android:checked="true"
                 android:text="All"
-                android:textAlignment="center" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_item_shopping"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Shopping"
-                android:textAlignment="center" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_item_home"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Home"
-                android:textAlignment="center" />
-
-            <com.google.android.material.chip.Chip
-                style="@style/Widget.MaterialComponents.Chip.Choice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Test1"
-                android:textAlignment="center" />
-
-            <com.google.android.material.chip.Chip
-                style="@style/Widget.MaterialComponents.Chip.Choice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Test2"
                 android:textAlignment="center" />
 
         </com.google.android.material.chip.ChipGroup>
@@ -118,7 +87,7 @@
         app:chipIcon="@drawable/ic_add"
         app:iconStartPadding="15dp"
         app:layout_constraintEnd_toEndOf="@id/guide_right"
-        app:layout_constraintTop_toBottomOf="@id/edt_search"/>
+        app:layout_constraintTop_toBottomOf="@id/search_note"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view"
@@ -136,6 +105,7 @@
     </androidx.recyclerview.widget.RecyclerView>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/btn_new"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:backgroundTint="@color/floating_button"
