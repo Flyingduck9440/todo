@@ -1,7 +1,6 @@
 package com.mafiaz.todo.viewmodel;
 
 import android.app.Application;
-import android.os.AsyncTask;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
