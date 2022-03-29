@@ -45,7 +45,7 @@ public class NoteDataAdapter extends RecyclerView.Adapter<NoteDataAdapter.myView
         holder.title.setText(data.get(position).getTitle());
 
         Date unix = new Date(data.get(position).getTimestamps());
-        String converted_date = new SimpleDateFormat("EEE, d MMM yyyy HH:mm aaa").format(unix);
+        String converted_date = new SimpleDateFormat("EEE, d MMM yyyy   -   HH:mm aaa").format(unix);
         holder.date.setText(converted_date);
 
         holder.body.setText(data.get(position).getBody());
@@ -57,7 +57,7 @@ public class NoteDataAdapter extends RecyclerView.Adapter<NoteDataAdapter.myView
         return data.size();
     }
 
-    public class myViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class myViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
         TextView title;
         TextView date;
         TextView body;
@@ -77,15 +77,23 @@ public class NoteDataAdapter extends RecyclerView.Adapter<NoteDataAdapter.myView
 
             this.listener = listener;
             cardView.setOnClickListener(this);
+            cardView.setOnLongClickListener(this);
         }
 
         @Override
         public void onClick(View view) {
-            listener.onCardClicked(data.get(getAdapterPosition()).getId());
+            listener.onCardClicked(getAdapterPosition());
+        }
+
+        @Override
+        public boolean onLongClick(View view) {
+            listener.onCardLongClicked(getAdapterPosition(), view);
+            return true;
         }
     }
 
     public interface onCardClickListener {
-        void onCardClicked(int note_id);
+        void onCardClicked(int position);
+        void onCardLongClicked(int position, View view);
     }
 }

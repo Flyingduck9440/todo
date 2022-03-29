@@ -1,10 +1,10 @@
 package com.mafiaz.todo.viewmodel;
 
 import android.app.Application;
+import android.os.AsyncTask;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
-import androidx.lifecycle.LiveData;
 
 import com.mafiaz.todo.model.CategoryList;
 import com.mafiaz.todo.model.NoteDAO;
@@ -15,7 +15,6 @@ import java.util.List;
 
 public class MainViewModel extends AndroidViewModel {
 
-    private LiveData<List<CategoryList>> allCategory;
     private static NoteDAO noteDAO;
 
     public MainViewModel(@NonNull Application application) {
@@ -54,7 +53,20 @@ public class MainViewModel extends AndroidViewModel {
         noteDAO.deleteNoteByCategory(category_name);
     }
 
+    public void updateNote(NoteData data){
+        noteDAO.updateNote(data);
+    }
+
+    public void deleteNote(int id){
+        noteDAO.deleteNote(id);
+    }
+
+    public void deleteAll(){
+        noteDAO.deleteAll();
+    }
+
     public List<CategoryList> getAllCategory(){
         return noteDAO.getCategoryList();
     }
+
 }

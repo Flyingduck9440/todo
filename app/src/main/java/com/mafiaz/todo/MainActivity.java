@@ -5,15 +5,14 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuPopupHelper;
-import androidx.lifecycle.Observer;
+import androidx.appcompat.widget.SearchView;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Parcelable;
-import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -29,8 +28,9 @@ import com.mafiaz.todo.model.NoteData;
 import com.mafiaz.todo.viewmodel.MainViewModel;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, NoteDataAdapter.onCardClickListener{
 
@@ -38,8 +38,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private ActivityMainBinding _binding;
 
-    private ArrayList<String> categoryArrayList = new ArrayList<>();
+    private HashMap<Integer, String> categoryHashMap = new HashMap<>();
     private List<NoteData> receiveData = new ArrayList<>();
+    private List<NoteData> filter = new ArrayList<>();
 
     private MainViewModel viewModel;
     private String currentChipName = EMBEDDED_CATEGORY;
@@ -47,6 +48,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private NoteDataAdapter adapter;
 
     private Chip chip;
+    private String searchText = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,25 +63,82 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         loadCategoryFromDatabase();
 
-        if(categoryArrayList.size() > 1){
-            for(String name : categoryArrayList){
-                if(!name.equals(EMBEDDED_CATEGORY)){
-                    addChip(View.generateViewId(), name);
+        if(categoryHashMap.size() > 1){
+            for(Map.Entry<Integer, String> entry : categoryHashMap.entrySet()){
+                if(!entry.getValue().equals(EMBEDDED_CATEGORY)){
+                    addChip(entry.getKey(), entry.getValue(),false);
                 }
             }
         }
 
+
         adapter = new NoteDataAdapter(this, this);
         _binding.recyclerView.setAdapter(adapter);
+
+        _binding.chipGroup.setOnCheckedChangeListener(new ChipGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(ChipGroup group, int checkedId) {
+                currentChipName = categoryHashMap.get(checkedId);
+            }
+        });
 
         _binding.chipItemAll.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                currentChipName = _binding.chipItemAll.getText().toString();
                 getDataByCurrentCategory();
             }
         });
 
+        registerForContextMenu(_binding.chipItemAll);
+
+        _binding.searchNote.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                searchText = newText;
+                setFilter(newText);
+                return true;
+            }
+        });
+
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.all_setting,menu);
+    }
+
+    @Override
+    public boolean onContextItemSelected(@NonNull MenuItem item) {
+        if(item.getItemId() == R.id.clear_all){
+            showClearAllDialog();
+            return true;
+        }
+        return false;
+    }
+
+    private void setFilter(String newText){
+        filter.clear();
+        for(NoteData note : receiveData){
+            if(note.getTitle().toLowerCase().contains(newText.toLowerCase()) ||
+            note.getBody().toLowerCase().contains(newText.toLowerCase())){
+                filter.add(note);
+            }
+        }
+        adapter.setData(filter);
+        adapter.notifyDataSetChanged();
+
+        _binding.txtNoData.setVisibility(View.GONE);
+        if(filter.size() == 0){
+            _binding.txtNoData.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
@@ -91,8 +150,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.btn_new:
                 Intent intent = new Intent(this, AddActivity.class);
                 intent.putExtra("chipName", currentChipName);
-                if(categoryArrayList.size() > 0){
-                    intent.putExtra("category_name",categoryArrayList);
+                if(categoryHashMap.size() > 0){
+
+                    intent.putExtra("category_name", new ArrayList<>(categoryHashMap.values()));
                 }
                 startActivity(intent);
                 break;
@@ -100,8 +160,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
-    public void onCardClicked(int note_id) {
-        Log.e("Card ID", ""+note_id);
+    public void onCardClicked(int position) {
+        Intent intent = new Intent(this, UpdateActivity.class);
+        intent.putExtra("note_data", filter.get(position));
+        startActivity(intent);
+    }
+
+    @Override
+    @SuppressLint("RestrictedApi")
+    public void onCardLongClicked(int position, View view) {
+        MenuBuilder menuBuilder = new MenuBuilder(this);
+        MenuInflater menuInflater = new MenuInflater(this);
+        menuInflater.inflate(R.menu.card_setting, menuBuilder);
+
+        MenuPopupHelper popupHelper = new MenuPopupHelper(this, menuBuilder, view);
+        popupHelper.setForceShowIcon(true);
+
+        popupHelper.show();
+        menuBuilder.setCallback(new MenuBuilder.Callback() {
+            @Override
+            public boolean onMenuItemSelected(@NonNull MenuBuilder menu, @NonNull MenuItem item) {
+                showDeleteNoteDialog(filter.get(position).getId());
+                return true;
+            }
+
+            @Override
+            public void onMenuModeChange(@NonNull MenuBuilder menu) {
+            }
+        });
     }
 
     private void chipListener(Chip chip){
@@ -109,8 +195,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         chip.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                currentChipName = categoryArrayList.get(view.getId());
-
                 getDataByCurrentCategory();
             }
         });
@@ -118,7 +202,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public boolean onLongClick(View view) {
                 _binding.chipGroup.check(view.getId());
-                currentChipName = categoryArrayList.get(view.getId());
                 getDataByCurrentCategory();
                 showPopup(view);
                 return true;
@@ -130,7 +213,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onResume() {
         super.onResume();
-        if(categoryArrayList.size() == 0){
+        if(categoryHashMap.size() == 0){
             loadCategoryFromDatabase();
         }
         getDataByCurrentCategory();
@@ -142,14 +225,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         _binding = null;
     }
 
-    private void addChip(int id, String text){
+    private void addChip(int id, String text,boolean check){
         chip = (Chip) getLayoutInflater().inflate(R.layout.chip_choice_item,_binding.getRoot(),false);
         chip.setId(id);
         chip.setText(text);
-
+        chip.setChecked(check);
         _binding.chipGroup.addView(chip);
 
         chipListener(chip);
+
+        categoryHashMap.put(id, text);
     }
 
     @SuppressLint("RestrictedApi")
@@ -168,7 +253,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public boolean onMenuItemSelected(@NonNull MenuBuilder menu, @NonNull MenuItem item) {
                 switch (item.getItemId()){
                     case R.id.rename:
-                        showRenameDialog(currentChipName);
+                        showRenameDialog(view, currentChipName);
                         return true;
                     case R.id.delete:
                         showDeleteDialog(view, currentChipName);
@@ -197,12 +282,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         alert.setPositiveButton("Add", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                if(categoryArrayList.contains(editText.getText().toString())){
+                if(categoryHashMap.containsValue(editText.getText().toString())){
                     Toast.makeText(getApplication(), "Already created this category.", Toast.LENGTH_SHORT).show();
                 }else {
-                    addChip(View.generateViewId(), editText.getText().toString());
+                    addChip(View.generateViewId(), editText.getText().toString(),false);
                     viewModel.addCategory(editText.getText().toString());
-                    categoryArrayList.add(editText.getText().toString());
                 }
             }
         });
@@ -212,7 +296,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    private void showRenameDialog(String old_name){
+    private void showRenameDialog(View view, String old_name){
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
         LayoutInflater inflater = getLayoutInflater();
@@ -223,16 +307,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         alert.setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                if(!categoryArrayList.contains(editText.getText().toString())) {
+                if(!categoryHashMap.containsValue(editText.getText().toString())) {
 
                     viewModel.updateCategoryName(old_name, editText.getText().toString());
-                    categoryArrayList.set(categoryArrayList.indexOf(old_name), editText.getText().toString());
-                    _binding.chipGroup.removeViews(1, categoryArrayList.size());
+                    categoryHashMap.put(view.getId(), editText.getText().toString());
+                    _binding.chipGroup.removeAllViews();
 
-                    for(String name: categoryArrayList){
-                        addChip(View.generateViewId(), name);
+                    boolean check = false;
+                    for(Map.Entry<Integer, String> entry : categoryHashMap.entrySet()){
+                        check = entry.getValue().equals(editText.getText().toString());
+                        addChip(entry.getKey(), entry.getValue(),check);
                     }
-
+                    currentChipName = editText.getText().toString();
                     getDataByCurrentCategory();
                 }
             }
@@ -252,13 +338,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onClick(DialogInterface dialogInterface, int i) {
                 _binding.chipGroup.removeView(view);
                 viewModel.deleteCategory(chipName);
-                categoryArrayList.remove(chipName);
+                categoryHashMap.remove(view.getId());
 
                 _binding.chipItemAll.setChecked(true);
                 currentChipName = EMBEDDED_CATEGORY;
 
                 getDataByCurrentCategory();
 
+            }
+        });
+
+        alert.show();
+    }
+
+    private void showDeleteNoteDialog(int id){
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+        alert.setTitle("Delete");
+        alert.setMessage("Are you sure want to delete this note?");
+        alert.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                viewModel.deleteNote(id);
+                getDataByCurrentCategory();
             }
         });
 
@@ -275,7 +377,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onClick(DialogInterface dialogInterface, int i) { ;
                 viewModel.clearNotesByCategory(currentChipName);
                 getDataByCurrentCategory();
+            }
+        });
 
+        alert.show();
+    }
+
+    private void showClearAllDialog(){
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+        alert.setTitle("Clear Data");
+        alert.setMessage("All notes in this category will be deleted, Confirm?");
+        alert.setPositiveButton("Clear", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) { ;
+                viewModel.deleteAll();
+                getDataByCurrentCategory();
             }
         });
 
@@ -283,15 +400,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void loadCategoryFromDatabase(){
-        categoryArrayList.clear();
-        categoryArrayList.add(EMBEDDED_CATEGORY);
+        categoryHashMap.clear();
+
+        categoryHashMap.put(_binding.chipItemAll.getId(), EMBEDDED_CATEGORY);
         for(CategoryList name: viewModel.getAllCategory()){
-            categoryArrayList.add(name.getCategory_name());
+            categoryHashMap.put(View.generateViewId(),name.getCategory_name());
         }
     }
 
     private void getDataByCurrentCategory(){
         receiveData.clear();
+        filter.clear();
         if(currentChipName.equals(EMBEDDED_CATEGORY)){
             receiveData = viewModel.getAllNote();
         }else{
@@ -300,6 +419,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         adapter.setData(receiveData);
         adapter.notifyDataSetChanged();
 
+        _binding.txtNoData.setVisibility(View.VISIBLE);
+        if(receiveData.size() > 0){
+            _binding.txtNoData.setVisibility(View.GONE);
+        }
+
+        filter.addAll(receiveData);
+
+        if(!searchText.isEmpty()){
+            setFilter(searchText);
+        }
     }
 
 }

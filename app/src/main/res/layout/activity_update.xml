@@ -37,13 +37,14 @@
         android:id="@+id/input_header"
         android:layout_width="0dp"
         android:layout_height="60dp"
-        android:padding="8dp"
-        android:orientation="horizontal"
         android:background="@color/input_header"
         android:elevation="8dp"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
             android:id="@+id/img_check"
@@ -51,29 +52,19 @@
             android:layout_height="match_parent"
             android:src="@drawable/ic_check"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
+            app:layout_constraintTop_toTopOf="parent" />
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/txt_category_layout"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-            android:layout_width="120dp"
-            android:layout_height="55dp"
+        <TextView
+            android:id="@+id/txt_date"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            android:gravity="center"
             app:layout_constraintStart_toEndOf="@id/img_check"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent">
-
-            <AutoCompleteTextView
-                android:id="@+id/dropdown_category"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@android:color/transparent"
-                android:cursorVisible="false"
-                android:focusable="false"
-                android:textSize="15sp"
-                android:gravity="center"
-                android:inputType="none|textNoSuggestions"
-                android:maxLines="1" />
-        </com.google.android.material.textfield.TextInputLayout>
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -87,7 +78,7 @@
         app:layout_constraintTop_toBottomOf="@id/input_header">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/edt_title"
+            android:id="@+id/txt_title"
             android:hint="Title"
             android:background="@android:color/transparent"
             android:textColor="@color/black"
@@ -109,7 +100,7 @@
         app:layout_constraintTop_toBottomOf="@id/txt_layout_title">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/edt_body"
+            android:id="@+id/txt_body"
             android:hint="Your text here."
             android:inputType="textMultiLine"
             android:background="@android:color/transparent"

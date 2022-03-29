@@ -1,8 +1,10 @@
 package com.mafiaz.todo.model;
 
 import androidx.room.Dao;
+import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
+import androidx.room.Update;
 
 import java.util.List;
 
@@ -14,15 +16,11 @@ public interface NoteDAO {
     @Query("SELECT * FROM NoteData_Table WHERE category IN (:category) ORDER BY timestamps DESC")
     List<NoteData> getAllByCategory(String category);
 
-    @Query("SELECT * FROM NoteData_Table WHERE title LIKE '%'+:search+'%' OR " +
-                                                "body LIKE '%'+:search+'%'")
-    List<NoteData> getAllBySearch(String search);
-
     @Query("SELECT * FROM Category_Table")
     List<CategoryList> getCategoryList();
 
     @Query("DELETE FROM NoteData_Table WHERE id = :id")
-    void deleteSpecific(int id);
+    void deleteNote(int id);
 
     @Query("DELETE FROM NoteData_Table WHERE category = :category")
     void deleteNoteByCategory(String category);
@@ -35,6 +33,12 @@ public interface NoteDAO {
 
     @Query("UPDATE NoteData_Table SET category = :new_name WHERE category = :old_name")
     void updateNoteCategoryName(String old_name, String new_name);
+
+    @Update
+    void updateNote(NoteData data);
+
+    @Query("DELETE FROM NoteData_Table")
+    void deleteAll();
 
     @Insert
     void addNote(NoteData data);

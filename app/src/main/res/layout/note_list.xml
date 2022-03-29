@@ -9,6 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="200dp"
         app:cardCornerRadius="20dp"
+        android:backgroundTint="@color/input_body"
         android:elevation="13dp"
         android:layout_margin="8dp"
         android:clickable="true"
@@ -34,7 +35,7 @@
                 android:id="@+id/card_date_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="EEE, d mm yyyy - HH:mm aaa"
+                android:text="EEE, d mm yyyy     -     HH:mm aaa"
                 android:textSize="9sp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"/>
