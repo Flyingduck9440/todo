@@ -102,24 +102,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             @Override
             public boolean onQueryTextChange(String newText) {
+                searchText = newText;
                 if(newText.isEmpty()){
                     hideKeyboard(_binding.searchNote);
                     _binding.searchNote.clearFocus();
-                }else{
-                    searchText = newText;
                 }
                 setFilter(newText);
                 return true;
             }
         });
 
-        ImageView clear = _binding.searchNote.findViewById(androidx.appcompat.R.id.search_close_btn);
+        /*ImageView clear = _binding.searchNote.findViewById(androidx.appcompat.R.id.search_close_btn);
         clear.setOnClickListener(view -> {
             searchText = "";
             _binding.searchNote.setQuery(searchText,true);
             _binding.searchNote.clearFocus();
             hideKeyboard(_binding.searchNote);
-        });
+        });*/
 
     }
 
