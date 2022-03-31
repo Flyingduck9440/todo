@@ -9,6 +9,7 @@ import androidx.appcompat.widget.SearchView;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -17,7 +18,9 @@ import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.android.material.chip.Chip;
@@ -32,7 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, NoteDataAdapter.onCardClickListener{
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, NoteDataAdapter.onCardClickListener {
 
     private final static String EMBEDDED_CATEGORY = "All";
 
@@ -94,17 +97,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         _binding.searchNote.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                return true;
+                return false;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                searchText = newText;
+                if(newText.isEmpty()){
+                    hideKeyboard(_binding.searchNote);
+                    _binding.searchNote.clearFocus();
+                }else{
+                    searchText = newText;
+                }
                 setFilter(newText);
                 return true;
             }
         });
 
+        ImageView clear = _binding.searchNote.findViewById(androidx.appcompat.R.id.search_close_btn);
+        clear.setOnClickListener(view -> {
+            searchText = "";
+            _binding.searchNote.setQuery(searchText,true);
+            _binding.searchNote.clearFocus();
+            hideKeyboard(_binding.searchNote);
+        });
+
+    }
+
+    @SuppressLint("NewApi")
+    protected void hideKeyboard(View view)
+    {
+        InputMethodManager in = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        in.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
     }
 
     @Override
